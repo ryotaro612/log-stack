@@ -7,13 +7,13 @@ import Text.ParserCombinators.Parsec
 import Text.Parsec
 
 --sample :: Int
-key = many1 $ letter <|> (char '_')
+-- key = many1 $ letter <|> (char '_') <|> 
+key = many1 $ noneOf ":"
 
 kv = do
-    char '$'
     k <- key
     char ':'
-    v <- many1 $ noneOf ":\t"
+    v <- many $ noneOf "\t"
     return (k, v)
 
 ltsv = do
@@ -21,17 +21,114 @@ ltsv = do
     ks <- many $ do {(char '\t'); kk <- kv; return kk}
     return (k : ks)
 
-
+f :: IO [String]
+f = do 
+    handle <- openFile "access.log" ReadMode
+    contents <- hGetContents handle
+    return $ lines contents
    
-{-
-sample = do 
-    c <- char '$' 
-    l <- letter <$
-    return 1 
+
+data NginxLog = NginxLog { dateGmt :: String
+                         , dateLocal :: String
+                         , documentRoot :: String 
+                         , documentUri :: String 
+                         , fastcgiScriptName :: String 
+                         , host :: String 
+                         , hostname :: String 
+                         , msec :: String 
+                         , nginxVersion :: String 
+                         , pid :: String 
+                         , pipe :: String 
+                         , proxyAddXForwardedFor :: String 
+                         , realipRemoteAddr :: String 
+                         , realpathRoot :: String 
+                         , remoteAddr :: String 
+                         , remotePort :: String 
+                         , request :: String 
+                         , requestBody :: String 
+                         , requestCompletion :: String 
+                         , requestFilename :: String 
+                         , requestLength :: String 
+                         , requestMethod :: String 
+                         , requestTime :: String 
+                         , requestUri :: String 
+                         , scheme:: String 
+                         , serverAddr:: String 
+                         , serverName:: String 
+                         , serverPort:: String 
+                         , serverProtocol:: String 
+                         , status:: String 
+                         , tcpinfoRtt:: String 
+                         , tcpinfoRttVar:: String 
+                         , tcpinfoSndCwnd:: String 
+                         , tcpinfoRcvSpace:: String 
+                         , timeIso8601:: String 
+                         , timeLocal:: String 
+                         , uri:: String 
+                         } deriving Show
+
+fnd :: String -> [String] -> String
+fnd name lst = case filter (\e -> (e == name)) lst of
+    [a] -> a
+    [] -> ""
+
+cre:: [String] -> NginxLog
+cre lst = NginxLog (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (lst !! 1)
+                   (fnd "uri" lst)
+
+
+
+hoge :: [(String, String)] -> [String]
+hoge a = do
+  aa <- a
+  return (fst aa)
+
+{-p e = case (parse ltsv "" e)  of
+    Right a -> a
 -}
+
 main:: IO()
 main = do
-    print $ parse ltsv "" "$foo_bar:hoge\t$hoge:hoge"
+    a <- f
+    print $ (\e -> case parse ltsv "" e of 
+        Right r -> cre  ((\ee -> fst ee)<$> r )) <$> a  
+
+--    print $ parse ltsv "" "foo_bar:hoge\thoge:hoge"
     putStrLn "This test always fails!"
     exitFailure
 
