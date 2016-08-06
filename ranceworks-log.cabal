@@ -16,5 +16,12 @@ executable          ranceworks-log
 
   build-depends:  base
                 , yesod-core
+                , parsec
 
   ghc-options:    -threaded -O2 -rtsopts -with-rtsopts=-N
+
+Test-Suite tests
+    type:       exitcode-stdio-1.0
+    main-is:    tests.hs
+    build-depends: base
+    hs-source-dirs: test
