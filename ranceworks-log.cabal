@@ -24,4 +24,5 @@ Test-Suite tests
     type:       exitcode-stdio-1.0
     main-is:    tests.hs
     build-depends: base
+                 , parsec
     hs-source-dirs: test
