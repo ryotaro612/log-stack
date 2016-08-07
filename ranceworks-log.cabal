@@ -25,4 +25,5 @@ Test-Suite tests
     main-is:    tests.hs
     build-depends: base
                  , parsec
+                 , mysql-simple
     hs-source-dirs: test

@@ -1,13 +1,18 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE NoMonomorphismRestriction #-} 
+{-# LANGUAGE FlexibleContexts #-}
+
 module Main where
 
 import System.IO
 import System.Exit (exitFailure)
--- import Text.Parsec
 import Text.ParserCombinators.Parsec
 import Text.Parsec
+import Database.MySQL.Simple
 
---sample :: Int
--- key = many1 $ letter <|> (char '_') <|> 
+none :: Stream s m Char => ParsecT s u m Char
+none = noneOf ":"
+
 key = many1 $ noneOf ":"
 
 kv = do
@@ -67,48 +72,48 @@ data NginxLog = NginxLog { dateGmt :: String
                          , uri:: String 
                          } deriving Show
 
-fnd :: String -> [String] -> String
-fnd name lst = case filter (\e -> (e == name)) lst of
-    [a] -> a
+fnd :: String -> [(String, String)] -> String
+fnd name lst = case filter (\(k, v) -> (k == name)) lst of
+    [(k, v)] -> v
     [] -> ""
 
-cre:: [String] -> NginxLog
-cre lst = NginxLog (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
-                   (lst !! 1)
+cre:: [(String, String)] -> NginxLog
+cre lst = NginxLog (fnd "date_gmt" lst)
+                   (fnd "date_local" lst)
+                   (fnd "document_root" lst)
+                   (fnd "document_uri" lst)
+                   (fnd "fastcgi_script_name" lst)
+                   (fnd "host" lst)
+                   (fnd "hostname" lst)
+                   (fnd "msec" lst)
+                   (fnd "nginx_version" lst)
+                   (fnd "pid" lst)
+                   (fnd "pipe" lst)
+                   (fnd "proxy_add_x_forwared_for" lst)
+                   (fnd "realip_remote_addr" lst)
+                   (fnd "realpath_root" lst)
+                   (fnd "remote_addr" lst)
+                   (fnd "remote_port" lst)
+                   (fnd "request" lst)
+                   (fnd "request_body" lst)
+                   (fnd "request_completion" lst)
+                   (fnd "request_filename" lst)
+                   (fnd "request_length" lst)
+                   (fnd "request_method" lst)
+                   (fnd "request_time" lst)
+                   (fnd "request_uri" lst)
+                   (fnd "scheme" lst)
+                   (fnd "server_addr" lst)
+                   (fnd "server_name" lst)
+                   (fnd "server_port" lst)
+                   (fnd "server_protocolj" lst)
+                   (fnd "status" lst)
+                   (fnd "tcpinfo_rtt" lst)
+                   (fnd "tcpinfo_rtt_var" lst)
+                   (fnd "tcpinfo_snd_cwnd" lst)
+                   (fnd "tcpinfo_rcv_space" lst)
+                   (fnd "time_iso8601" lst)
+                   (fnd "time_local" lst)
                    (fnd "uri" lst)
 
 
@@ -118,15 +123,19 @@ hoge a = do
   aa <- a
   return (fst aa)
 
-{-p e = case (parse ltsv "" e)  of
-    Right a -> a
--}
+hello :: IO Int
+hello = do
+  conn <- connect defaultConnectInfo
+  [Only i] <- query_ conn "select 2 + 2"
+  return i
 
 main:: IO()
 main = do
     a <- f
-    print $ (\e -> case parse ltsv "" e of 
-        Right r -> cre  ((\ee -> fst ee)<$> r )) <$> a  
+    conn <- connect defaultConnectInfo
+    i <-  hello
+    print i
+    --print $ (\e -> case parse ltsv "" e of Right r -> cre r ) <$> a  
 
 --    print $ parse ltsv "" "foo_bar:hoge\thoge:hoge"
     putStrLn "This test always fails!"
