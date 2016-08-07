@@ -8,12 +8,12 @@ import Data.Time.Format
 import Data.Time.LocalTime
 import Data.Time.Calendar
 import Data.Functor.Identity (Identity)
+import Text.Regex.Posix
 
---b :: ParseTime t => Maybe t
-b :: Maybe LocalTime
-b = do
- c <-  parseTimeM True defaultTimeLocale "%H" "23" 
- return c
+tzTime :: String -> Maybe LocalTime
+tzTime dateStr = do
+  d <-  parseTimeM True defaultTimeLocale "%A, %d-%b-%Y %T %Z" dateStr
+  return d
 
 
 logs :: String -> IO [String]
@@ -38,8 +38,8 @@ ltsv = do
     ks <- many $ do {(char '\t'); kk <- kv; return kk}
     return (k : ks)
 
-data NginxLog = NginxLog { dateGmt :: String
-                         , dateLocal :: String
+data NginxLog = NginxLog { dateGmt :: Maybe LocalTime
+                         , dateLocal :: Maybe LocalTime 
                          , documentRoot :: String 
                          , documentUri :: String 
                          , geoipAreaCode :: String
@@ -84,8 +84,8 @@ fnd name lst = case filter (\(k, v) -> (k == name)) lst of
     [] -> ""
 
 cre:: [(String, String)] -> NginxLog
-cre lst = NginxLog (fnd "date_gmt" lst)
-                   (fnd "date_local" lst)
+cre lst = NginxLog (tzTime $ fnd "date_gmt" lst)
+                   (tzTime $ fnd "date_local" lst)
                    (fnd "document_root" lst)
                    (fnd "document_uri" lst)
                    (fnd "geoip_area_code" lst)
@@ -123,10 +123,22 @@ cre lst = NginxLog (fnd "date_gmt" lst)
                    (fnd "http_referer" lst)
                    (fnd "http_user_agent" lst)
 
+analysis :: [NginxLog] -> [NginxLog]
+analysis logs = filter (\e -> not (httpReferer e  == "-") && 
+                              case uri e of 
+                                s : ".html" -> True 
+                                _ ->  False) logs
+
+analysis2 :: [NginxLog] -> [NginxLog]
+analysis2 logs = filter (\e -> (uri e) =~ ".*\\.html$" &&
+                               not (httpReferer e == "-")) 
+                        logs
+
+
 main :: IO ()
 main = do
     logs <- logs "access.log"
-    print $ (\e -> case parse ltsv "" e of Right r -> cre r ) <$> logs
+    print $ map (\e -> (uri e, httpReferer e)) $ analysis2 $ (\e -> case parse ltsv "" e of Right r -> cre r ) <$> logs
     putStrLn ""
     -- print $ (\e -> case parse ltsv "" e of Right r -> cre r ) <$> a  
     -- putStrLn "This test always fails!"
