@@ -28,6 +28,7 @@ executable log-stack-exe
                      , parsec
                      , time
                      , regex-posix
+                     , pretty
   default-language:    Haskell2010
 
 test-suite log-stack-test

@@ -9,6 +9,7 @@ import Data.Time.LocalTime
 import Data.Time.Calendar
 import Data.Functor.Identity (Identity)
 import Text.Regex.Posix
+import qualified Text.PrettyPrint as P
 
 tzTime :: String -> Maybe LocalTime
 tzTime dateStr = do
@@ -134,12 +135,13 @@ analysis2 logs = filter (\e -> (uri e) =~ ".*\\.html$" &&
                                not (httpReferer e == "-")) 
                         logs
 
+prt :: [NginxLog] -> [P.Doc]
+prt logs = (\log -> P.text (uri log) P.$+$ P.nest 5 (P.text (uri log))) <$> logs :: [P.Doc]
 
 main :: IO ()
 main = do
     logs <- logs "access.log"
-    print $ map (\e -> (uri e, httpReferer e)) $ analysis2 $ (\e -> case parse ltsv "" e of Right r -> cre r ) <$> logs
-    putStrLn ""
+    mapM_ print $ prt $ analysis2 $ (\e -> case parse ltsv "" e of Right r -> cre r ) <$> logs
     -- print $ (\e -> case parse ltsv "" e of Right r -> cre r ) <$> a  
     -- putStrLn "This test always fails!"
 
