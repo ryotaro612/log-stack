@@ -136,7 +136,12 @@ analysis2 logs = filter (\e -> (uri e) =~ ".*\\.html$" &&
                         logs
 
 prt :: [NginxLog] -> [P.Doc]
-prt logs = (\log -> P.text (uri log) P.$+$ P.nest 5 (P.text (uri log))) <$> logs :: [P.Doc]
+prt logs = (\log -> P.text (uri log) 
+               P.$+$ P.nest 5 (P.text (uri log)) 
+               P.$+$ P.nest 5 (P.text (geoipCity log)) 
+               P.$+$ P.nest 5 (P.text (httpReferer log)) 
+               P.$+$ P.nest 5 (P.text (geoipCityCountryCode log))) 
+           <$> logs :: [P.Doc]
 
 main :: IO ()
 main = do
