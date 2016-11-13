@@ -29,6 +29,7 @@ executable log-stack-exe
                      , time
                      , regex-posix
                      , pretty
+                     , persistent
   default-language:    Haskell2010
 
 test-suite log-stack-test

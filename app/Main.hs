@@ -140,7 +140,8 @@ prt logs = (\log -> P.text (uri log)
                P.$+$ P.nest 5 (P.text (uri log)) 
                P.$+$ P.nest 5 (P.text (geoipCity log)) 
                P.$+$ P.nest 5 (P.text (httpReferer log)) 
-               P.$+$ P.nest 5 (P.text (geoipCityCountryCode log))) 
+               P.$+$ P.nest 5 (P.text (geoipCityCountryCode log))
+               P.$+$ P.nest 5 (P.text (show (dateLocal log))))
            <$> logs :: [P.Doc]
 
 main :: IO ()
